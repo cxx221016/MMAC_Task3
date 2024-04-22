@@ -26,26 +26,31 @@ from torch_optimizer import AdamP
 from model import ResNet50
 from materials import MMACDataSet
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):
+        print('class AverageMeter init')
         self.reset()
 
     def reset(self):
+        print('class AverageMeter reset')
         self.val = 0
         self.avg = 0
         self.sum = 0
         self.count = 0
 
     def update(self, val, n=1):
+        print('class AverageMeter update')
         self.val = val
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
 
 def mixup_data(x, y, alpha=1.0):
+    print('def mixup_data begin')
     batch_size = x.size()[0]
     lam = np.random.beta(alpha, alpha)
     index = torch.randperm(batch_size)
@@ -55,6 +60,7 @@ def mixup_data(x, y, alpha=1.0):
     return mixed_x, mixed_y
 
 def train(train_loader, net, optimizer, epoch, scheduler):
+    print('def train begin')
     batch_time = AverageMeter()
     data_time  = AverageMeter()
     losses     = AverageMeter()
@@ -68,8 +74,10 @@ def train(train_loader, net, optimizer, epoch, scheduler):
         
         img, target = mixup_data(img, target, alpha=1.0)
         
-        img = img.to(device)
-        target = target.to(device)
+        # img = img.to(device)
+        # target = target.to(device)
+        img = img.cuda()
+        target = target.cuda()
         
         output = net(img)
         loss =  nn.L1Loss()(output, target)
@@ -98,6 +106,7 @@ def train(train_loader, net, optimizer, epoch, scheduler):
 
 
 def validate(val_loader, net):
+    print('def validate begin')
     losses = AverageMeter()
     
     net.eval()
@@ -105,8 +114,10 @@ def validate(val_loader, net):
     with torch.no_grad():
         for idx, data in enumerate(val_loader):
             img, target = data
-            img = img.to(device)
-            target = target.to(device)
+            # img = img.to(device)
+            # target = target.to(device)
+            img = img.cuda()
+            target = target.cuda()
             
             output = net(img)
             loss =  nn.L1Loss()(output, target)
@@ -120,8 +131,13 @@ def validate(val_loader, net):
 
 if __name__ == '__main__':
     
+    print("Starting program")
+    
     root = './Prediction of Spherical Equivalent/'
+    print("Set root: ", root)
+    
     ckpt = './weights/ReXNetV2.pth'
+    print("Set ckpt: ", ckpt)
 
     batch_size = 96
     lr = 1e-3
@@ -158,7 +174,8 @@ if __name__ == '__main__':
     
     net = ResNet50(1)
     #net = ReXNetV2(width_mult=1.0, classes=1)
-    net = nn.DataParallel(net).to(device)
+    # net = nn.DataParallel(net).to(device)
+    net = nn.DataParallel(net).cuda()
     #cudnn.benchmark = True   
     
     optimizer = AdamP(net.parameters(), lr = lr, weight_decay = 0.001) 

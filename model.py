@@ -10,6 +10,7 @@ class model:
         self.checkpoint = ""
         # The model is evaluated using CPU, please do not change to GPU to avoid error reporting.
         self.device = torch.device("cpu")
+        # self.device = torch.device("cuda:0")
         
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
