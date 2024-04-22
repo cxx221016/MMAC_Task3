@@ -9,7 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
 
-import torch
+import torc
 import torch.nn as nn
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
@@ -25,6 +25,10 @@ from torch_optimizer import AdamP
 
 from model import ResNet50
 from materials import MMACDataSet
+
+import faulthandler
+faulthandler.enable()
+
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
