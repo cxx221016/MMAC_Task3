@@ -23,10 +23,26 @@ import torch.optim.lr_scheduler as lr_scheduler
 
 from torch_optimizer import AdamP
 
-from model import ResNet50
+from resnet import ResNet50
+from densnet import DenseNet121
+from efficient_V2_l import EfficientNetV2L
 from materials import MMACDataSet
 
+import faulthandler
+faulthandler.enable()
+
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Train a network with ResNet, DenseNet, or EfficientNetV2L')
+    parser.add_argument('--model', type=str, default='efficientnet', choices=['resnet', 'densenet', 'efficientnet'],
+                        help='Choose which model to use: resnet, densenet, or efficientnet')
+    args = parser.parse_args()
+    return args
+
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -55,6 +71,7 @@ def mixup_data(x, y, alpha=1.0):
     return mixed_x, mixed_y
 
 def train(train_loader, net, optimizer, epoch, scheduler):
+    print('def train begin')
     batch_time = AverageMeter()
     data_time  = AverageMeter()
     losses     = AverageMeter()
@@ -68,8 +85,10 @@ def train(train_loader, net, optimizer, epoch, scheduler):
         
         img, target = mixup_data(img, target, alpha=1.0)
         
-        img = img.to(device)
-        target = target.to(device)
+        #img = img.to(device)
+        #target = target.to(device)
+        img = img.cuda()
+        target = target.cuda()
         
         output = net(img)
         loss =  nn.L1Loss()(output, target)
@@ -98,6 +117,7 @@ def train(train_loader, net, optimizer, epoch, scheduler):
 
 
 def validate(val_loader, net):
+    print('def validate begin')
     losses = AverageMeter()
     
     net.eval()
@@ -105,8 +125,10 @@ def validate(val_loader, net):
     with torch.no_grad():
         for idx, data in enumerate(val_loader):
             img, target = data
-            img = img.to(device)
-            target = target.to(device)
+            #img = img.to(device)
+            #target = target.to(device)
+            img = img.cuda()
+            target = target.cuda()
             
             output = net(img)
             loss =  nn.L1Loss()(output, target)
@@ -119,11 +141,16 @@ def validate(val_loader, net):
 
 
 if __name__ == '__main__':
+    args = parse_args()
+    print("Starting program with model: ", args.model)
     
     root = './Prediction of Spherical Equivalent/'
-    ckpt = './weights/ReXNetV2.pth'
+    print("Set root: ", root)
+    
+    ckpt = './weights/' + args.model + '.pth'
+    print("Set ckpt: ", ckpt)
 
-    batch_size = 96
+    batch_size = 32
     lr = 1e-3
     epochs = 800
     
@@ -148,7 +175,7 @@ if __name__ == '__main__':
     ])
     
     train_dataset = MMACDataSet(root, train=True, transform=transform)
-    val_dataset = MMACDataSet(root, train=True, transform=None)
+    val_dataset = MMACDataSet(root, train=False, transform=None)
     
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
                                   drop_last=False, num_workers=8)
@@ -156,11 +183,20 @@ if __name__ == '__main__':
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False,
                                 num_workers=0)
     
-    net = ResNet50(1)
+    # Model selection based on command line argument
+    if args.model == 'resnet':
+        net = ResNet50(1)
+    elif args.model == 'densenet':
+        net = DenseNet121()
+    elif args.model == 'efficientnet':
+        net = EfficientNetV2L()
+
     #net = ReXNetV2(width_mult=1.0, classes=1)
-    net = nn.DataParallel(net).to(device)
+    #net = nn.DataParallel(net).to(device)
+    net = nn.DataParallel(net).cuda()
     #cudnn.benchmark = True   
     
+
     optimizer = AdamP(net.parameters(), lr = lr, weight_decay = 0.001) 
     
     steps_per_epoch = len(train_dataloader)
@@ -175,32 +211,13 @@ if __name__ == '__main__':
     start_time = time.time()
     best_val = 1e10
     for epoch in range(epochs):
-       train_logs = train(train_dataloader, net, optimizer, epoch, scheduler)
+        train_logs = train(train_dataloader, net, optimizer, epoch, scheduler)
        
        
-       if (epoch+1)%10 == 0:
-           val_logs = validate(val_dataloader, net)  
-           torch.save(net.module.state_dict(), ckpt)
+        if (epoch+1)%10 == 0:
+            val_logs = validate(val_dataloader, net)  
+            if val_logs < best_val:
+                best_val = val_logs
+                torch.save(net.module.state_dict(), ckpt)
            
     print('%d epochs training and val time : %.2f'%(epochs, time.time()-start_time))
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
-        
-        
-        
-        
-        
-        
-        

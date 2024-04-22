@@ -7,9 +7,10 @@ from torchvision import transforms
 
 class model:
     def __init__(self):
-        self.checkpoint = ""
+        self.checkpoint = "model_weights.pth"
         # The model is evaluated using CPU, please do not change to GPU to avoid error reporting.
         self.device = torch.device("cpu")
+        # self.device = torch.device("cuda:0")
         
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
