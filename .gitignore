@@ -2,3 +2,5 @@
 .vscode
 train
 valid
+weights
+__pycache__
