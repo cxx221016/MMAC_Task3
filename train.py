@@ -1,3 +1,4 @@
+
 import time
 import pickle
 import random
@@ -9,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image
 
-import torc
+import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
@@ -24,10 +25,20 @@ import torch.optim.lr_scheduler as lr_scheduler
 from torch_optimizer import AdamP
 
 from model import ResNet50
+from densnet import DenseNet121
 from materials import MMACDataSet
 
 import faulthandler
 faulthandler.enable()
+
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Train a network with ResNet or DenseNet')
+    parser.add_argument('--model', type=str, default='resnet', choices=['resnet', 'densenet'],
+                        help='Choose which model to use: resnet or densenet')
+    args = parser.parse_args()
+    return args
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -78,8 +89,8 @@ def train(train_loader, net, optimizer, epoch, scheduler):
         
         img, target = mixup_data(img, target, alpha=1.0)
         
-        # img = img.to(device)
-        # target = target.to(device)
+        #img = img.to(device)
+        #target = target.to(device)
         img = img.cuda()
         target = target.cuda()
         
@@ -118,8 +129,8 @@ def validate(val_loader, net):
     with torch.no_grad():
         for idx, data in enumerate(val_loader):
             img, target = data
-            # img = img.to(device)
-            # target = target.to(device)
+            #img = img.to(device)
+            #target = target.to(device)
             img = img.cuda()
             target = target.cuda()
             
@@ -134,8 +145,8 @@ def validate(val_loader, net):
 
 
 if __name__ == '__main__':
-    
-    print("Starting program")
+    args = parse_args()
+    print("Starting program with model: ", args.model)
     
     root = './Prediction of Spherical Equivalent/'
     print("Set root: ", root)
@@ -176,9 +187,14 @@ if __name__ == '__main__':
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False,
                                 num_workers=0)
     
-    net = ResNet50(1)
+    # Model selection based on command line argument
+    if args.model == 'resnet':
+        net = ResNet50(1)
+    elif args.model == 'densenet':
+        net = DenseNet121()
+
     #net = ReXNetV2(width_mult=1.0, classes=1)
-    # net = nn.DataParallel(net).to(device)
+    #net = nn.DataParallel(net).to(device)
     net = nn.DataParallel(net).cuda()
     #cudnn.benchmark = True   
     
@@ -204,10 +220,23 @@ if __name__ == '__main__':
            torch.save(net.module.state_dict(), ckpt)
            
     print('%d epochs training and val time : %.2f'%(epochs, time.time()-start_time))
+
     
     
     
     
+    
+    
+    
+    
+        
+        
+        
+        
+        
+        
+        
+        
     
     
     
