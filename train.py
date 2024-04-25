@@ -26,6 +26,7 @@ from torch_optimizer import AdamP
 
 from model import ResNet50
 from densnet import DenseNet121
+from efficient_V2_l import EfficientNetV2L
 from materials import MMACDataSet
 
 import faulthandler
@@ -34,9 +35,9 @@ faulthandler.enable()
 import argparse
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train a network with ResNet or DenseNet')
-    parser.add_argument('--model', type=str, default='resnet', choices=['resnet', 'densenet'],
-                        help='Choose which model to use: resnet or densenet')
+    parser = argparse.ArgumentParser(description='Train a network with ResNet, DenseNet, or EfficientNetV2L')
+    parser.add_argument('--model', type=str, default='resnet', choices=['resnet', 'densenet', 'efficientnet'],
+                        help='Choose which model to use: resnet, densenet, or efficientnet')
     args = parser.parse_args()
     return args
 
@@ -192,12 +193,15 @@ if __name__ == '__main__':
         net = ResNet50(1)
     elif args.model == 'densenet':
         net = DenseNet121()
+    elif args.model == 'efficientnet':
+        net = EfficientNetV2L()
 
     #net = ReXNetV2(width_mult=1.0, classes=1)
     #net = nn.DataParallel(net).to(device)
     net = nn.DataParallel(net).cuda()
     #cudnn.benchmark = True   
     
+
     optimizer = AdamP(net.parameters(), lr = lr, weight_decay = 0.001) 
     
     steps_per_epoch = len(train_dataloader)
@@ -220,37 +224,3 @@ if __name__ == '__main__':
            torch.save(net.module.state_dict(), ckpt)
            
     print('%d epochs training and val time : %.2f'%(epochs, time.time()-start_time))
-
-    
-    
-    
-    
-    
-    
-    
-    
-        
-        
-        
-        
-        
-        
-        
-        
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
-        
-        
-        
-        
-        
-        
-        
