@@ -41,7 +41,7 @@ def parse_args():
     return args
 
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:5' if torch.cuda.is_available() else 'cpu')
 
 
 class AverageMeter(object):
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     ckpt = './weights/ReXNetV2.pth'
     print("Set ckpt: ", ckpt)
 
-    batch_size = 96
+    batch_size = 64
     lr = 1e-3
     epochs = 800
     
