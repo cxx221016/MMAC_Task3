@@ -36,13 +36,13 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a network with ResNet, DenseNet, or EfficientNetV2L')
-    parser.add_argument('--model', type=str, default='resnet', choices=['resnet', 'densenet', 'efficientnet'],
+    parser.add_argument('--model', type=str, default='efficientnet', choices=['resnet', 'densenet', 'efficientnet'],
                         help='Choose which model to use: resnet, densenet, or efficientnet')
     args = parser.parse_args()
     return args
 
 
-device = torch.device('cuda:5' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class AverageMeter(object):
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     ckpt = './weights/ReXNetV2.pth'
     print("Set ckpt: ", ckpt)
 
-    batch_size = 64
+    batch_size = 32
     lr = 1e-3
     epochs = 800
     
