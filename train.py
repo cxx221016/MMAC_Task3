@@ -8,6 +8,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import ttach
 from PIL import Image
 
 import torch
@@ -124,9 +125,9 @@ def train(train_loader, net, optimizer, epoch, scheduler):
 def validate(val_loader, net):
     print('def validate begin')
     losses = AverageMeter()
-    
+
+    net = ttach.ClassificationTTAWrapper(net, ttach.aliases.d4_transform(), merge_mode='mean')
     net.eval()
-    
     with torch.no_grad():
         for idx, data in enumerate(val_loader):
             img, target = data
