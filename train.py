@@ -1,4 +1,3 @@
-
 import time
 import pickle
 import random
@@ -48,25 +47,21 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):
-        print('class AverageMeter init')
         self.reset()
 
     def reset(self):
-        print('class AverageMeter reset')
         self.val = 0
         self.avg = 0
         self.sum = 0
         self.count = 0
 
     def update(self, val, n=1):
-        print('class AverageMeter update')
         self.val = val
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
 
 def mixup_data(x, y, alpha=1.0):
-    print('def mixup_data begin')
     batch_size = x.size()[0]
     lam = np.random.beta(alpha, alpha)
     index = torch.randperm(batch_size)
@@ -152,7 +147,7 @@ if __name__ == '__main__':
     root = './Prediction of Spherical Equivalent/'
     print("Set root: ", root)
     
-    ckpt = './weights/model_weights.pth'
+    ckpt = './weights/' + args.model + '.pth'
     print("Set ckpt: ", ckpt)
 
     batch_size = 32
@@ -180,7 +175,7 @@ if __name__ == '__main__':
     ])
     
     train_dataset = MMACDataSet(root, train=True, transform=transform)
-    val_dataset = MMACDataSet(root, train=True, transform=None)
+    val_dataset = MMACDataSet(root, train=False, transform=None)
     
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
                                   drop_last=False, num_workers=8)
@@ -216,11 +211,13 @@ if __name__ == '__main__':
     start_time = time.time()
     best_val = 1e10
     for epoch in range(epochs):
-       train_logs = train(train_dataloader, net, optimizer, epoch, scheduler)
+        train_logs = train(train_dataloader, net, optimizer, epoch, scheduler)
        
        
-       if (epoch+1)%10 == 0:
-           val_logs = validate(val_dataloader, net)  
-           torch.save(net.module.state_dict(), ckpt)
+        if (epoch+1)%10 == 0:
+            val_logs = validate(val_dataloader, net)  
+            if val_logs < best_val:
+                best_val = val_logs
+                torch.save(net.module.state_dict(), ckpt)
            
     print('%d epochs training and val time : %.2f'%(epochs, time.time()-start_time))
