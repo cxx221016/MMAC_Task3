@@ -23,7 +23,7 @@ class DenseNet121(nn.Module):
 
 class model:
     def __init__(self):
-        self.checkpoint = ""
+        self.checkpoint = "model_weights.pth"
         self.device = torch.device("cpu")
         
         self.transform = transforms.Compose([

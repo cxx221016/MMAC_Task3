@@ -18,9 +18,9 @@ class EfficientNetV2L(nn.Module):
         x = self.efficientnet(x)
         return x
 
-class Model:
+class model:
     def __init__(self):
-        self.checkpoint = ""
+        self.checkpoint = "model_weights.pth"
         self.device = torch.device("cpu")
         
         self.transform = transforms.Compose([
