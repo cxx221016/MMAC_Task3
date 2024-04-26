@@ -25,7 +25,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 
 from torch_optimizer import AdamP
 
-from model import ResNet50
+from resnet import ResNet50
 from densnet import DenseNet121
 from efficient_V2_l import EfficientNetV2L
 from materials import MMACDataSet
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     root = './Prediction of Spherical Equivalent/'
     print("Set root: ", root)
     
-    ckpt = './weights/ReXNetV2.pth'
+    ckpt = './weights/model_weights.pth'
     print("Set ckpt: ", ckpt)
 
     batch_size = 96
