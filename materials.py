@@ -32,6 +32,11 @@ class MMACDataSet(Dataset):
         
         labels = df['spherical_equivalent'].values
         image_names = df['image'].values
+        # Non-image data
+        self.age = df['age'].values
+        self.sex = df['sex'].apply(lambda x: 1 if x == 'male' else 0).values  # Convert 'male'/'female' to 1/0
+        self.height = df['height'].values
+        self.weight = df['weight'].values
         
         self.anno_PATH = anno_PATH
         self.img_PATH = img_PATH
@@ -61,8 +66,14 @@ class MMACDataSet(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
         image = self.transform(image)
+        # Collect the non-image data for the current index
+        age = self.age[index]
+        sex = self.sex[index]
+        height = self.height[index]
+        weight = self.weight[index]
+        patient_info = torch.tensor([age, sex, height, weight], dtype=torch.float32)
         
-        return image, torch.FloatTensor([label])
+        return image, patient_info, torch.FloatTensor([label])
     
     def __len__(self):
         return len(self.image_names)
@@ -123,6 +134,10 @@ if __name__ == '__main__':
         
         
         
+        
+        
+        
+
         
         
         
