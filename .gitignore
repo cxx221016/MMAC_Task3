@@ -5,4 +5,6 @@ valid
 new
 new.csv
 weights
+efficientnet1.pth
+efficientnet2.pth
 __pycache__
