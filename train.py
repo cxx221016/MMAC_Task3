@@ -147,7 +147,7 @@ if __name__ == '__main__':
     root = './Prediction of Spherical Equivalent/'
     print("Set root: ", root)
     
-    ckpt = './weights/' + args.model + '.pth'
+    ckpt = './weights/' + args.model + '2.pth'
     print("Set ckpt: ", ckpt)
 
     batch_size = 32
@@ -216,8 +216,10 @@ if __name__ == '__main__':
        
         if (epoch+1)%10 == 0:
             val_logs = validate(val_dataloader, net)  
+            torch.save(net.module.state_dict(), ckpt)
             if val_logs < best_val:
                 best_val = val_logs
                 torch.save(net.module.state_dict(), ckpt)
+                print('Model saved.')
            
     print('%d epochs training and val time : %.2f'%(epochs, time.time()-start_time))

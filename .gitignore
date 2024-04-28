@@ -2,5 +2,7 @@
 .vscode
 train
 valid
+new
+new.csv
 weights
 __pycache__
