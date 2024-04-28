@@ -147,7 +147,7 @@ if __name__ == '__main__':
     root = './Prediction of Spherical Equivalent/'
     print("Set root: ", root)
     
-    ckpt = './weights/' + args.model + '2.pth'
+    ckpt = './weights/' + args.model + '.pth'
     print("Set ckpt: ", ckpt)
 
     batch_size = 32
